@@ -3,8 +3,9 @@ using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace LIBERO
@@ -20,7 +21,7 @@ namespace LIBERO
 		private void btnImport_Click(object sender, RibbonControlEventArgs e)
 		{
 			Worksheet destination = _excel.ActiveWorkbook.ActiveSheet, source = null;
-
+			DateTime? date = null;
 			try
 			{
 				var isEmpty = IsEmptySheet(destination);
@@ -43,6 +44,27 @@ namespace LIBERO
 
 					//Get the path of specified file
 					filePath = openFileDialog.FileName;
+
+					// Check if file name contains date
+					var regex = new Regex(@"(\d{4})(\d{2})(\d{2})");
+					var match = regex.Match(filePath);
+					if (match.Success)
+					{
+						try
+						{
+							date = DateTime.ParseExact(match.Value, "yyyyMMdd", CultureInfo.InvariantCulture);
+						}
+						catch
+						{
+							// ignore
+						}
+					}
+
+					if (date == null)
+					{
+						if (MessageBox.Show("Do not detected any string that match a date, use today instead. Click Ok to process with today's date; Click Cancel to cancel.", "", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return;
+						date = DateTime.Now;
+					}
 				}
 
 				var workbook = _excel.Workbooks.Open(filePath);
@@ -54,6 +76,12 @@ namespace LIBERO
 				{
 					source.UsedRange.Copy(destination.get_Range("A1"));
 					destinationTable = destination.ListObjects.Item[1];
+
+					// Rename planned column name if exist
+					if (destinationTable.HeaderRowRange.Cells.OfType<Range>().SingleOrDefault(x => x.Value == "Date Planned") != null)
+					{
+						destinationTable.ListColumns.get_Item("Date Planned").Name = $"Date Planned[{date:dd/MM/yyyy}]";
+					}
 				}
 				else // Sort and copy
 				{
@@ -69,7 +97,7 @@ namespace LIBERO
 					colDispNo.DataBodyRange.Value = sourceTable.ListColumns.get_Item("Disp.No.").DataBodyRange.Value;
 
 					ListColumn colPlanned;
-					var colPlanedName = $"Date Planned[{DateTime.Today:dd/MM/yyyy}]";
+					var colPlanedName = $"Date Planned[{date:dd/MM/yyyy}]";
 					if (destinationTable.HeaderRowRange.Cells.OfType<Range>().SingleOrDefault(x => x.Value == colPlanedName) != null)
 					{
 						if (MessageBox.Show($"There's already a column named {colPlanedName}, overwrite it? Click YES to overwrite, click NO to skip.", "Attention", MessageBoxButtons.YesNo) == DialogResult.OK)

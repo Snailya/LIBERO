@@ -60,9 +60,9 @@
 			this.btnImport.Name = "btnImport";
 			this.btnImport.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnImport_Click);
 			// 
-			// Ribbon1
+			// Ribbon
 			// 
-			this.Name = "Ribbon1";
+			this.Name = "Ribbon";
 			this.RibbonType = "Microsoft.Excel.Workbook";
 			this.Tabs.Add(this.tabLibero);
 			this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Ribbon1_Load);
