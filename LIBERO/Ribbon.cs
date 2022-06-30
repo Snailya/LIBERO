@@ -2,17 +2,19 @@
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;
+using System.Diagnostics;
 using System.Linq;
+
 using System.Windows.Forms;
 
 namespace LIBERO
 {
-	public partial class Ribbon1
+	public partial class Ribbon
 	{
 		private Microsoft.Office.Interop.Excel.Application _excel;
 		private void Ribbon1_Load(object sender, RibbonUIEventArgs e)
 		{
-			_excel = Globals.ThisAddIn.Application;
+			_excel = Globals.AddIn.Application;
 		}
 
 		private void btnImport_Click(object sender, RibbonControlEventArgs e)
@@ -33,19 +35,14 @@ namespace LIBERO
 				var filePath = string.Empty;
 				using (var openFileDialog = new OpenFileDialog())
 				{
-					openFileDialog.InitialDirectory = "c:\\";
 					openFileDialog.Filter = "All Excel Files |*.xls;*.xlsx;*.xlsm";
 					openFileDialog.FilterIndex = 2;
 					openFileDialog.RestoreDirectory = true;
-					if (openFileDialog.ShowDialog() == DialogResult.OK)
-					{
-						//Get the path of specified file
-						filePath = openFileDialog.FileName;
-					}
-					else
-					{
-						return;
-					}
+
+					if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+
+					//Get the path of specified file
+					filePath = openFileDialog.FileName;
 				}
 
 				var workbook = _excel.Workbooks.Open(filePath);
@@ -63,9 +60,13 @@ namespace LIBERO
 					destinationTable = destination.ListObjects.Item[1];
 					sourceTable = source.ListObjects.Item[1];
 
-					// Overwrite despatched
+					// Overwrite"Despatched ex-works"
 					var colDespatched = destinationTable.ListColumns.get_Item("Despatched ex-works");
 					colDespatched.DataBodyRange.Value = sourceTable.ListColumns.get_Item("Despatched ex-works").DataBodyRange.Value;
+
+					// Overwrite "Disp.No."
+					var colDispNo = destinationTable.ListColumns.get_Item("Disp.No.");
+					colDispNo.DataBodyRange.Value = sourceTable.ListColumns.get_Item("Disp.No.").DataBodyRange.Value;
 
 					ListColumn colPlanned;
 					var colPlanedName = $"Date Planned[{DateTime.Today:dd/MM/yyyy}]";
@@ -73,10 +74,10 @@ namespace LIBERO
 					{
 						if (MessageBox.Show($"There's already a column named {colPlanedName}, overwrite it? Click YES to overwrite, click NO to skip.", "Attention", MessageBoxButtons.YesNo) == DialogResult.OK)
 						{
-							// Overwrite planned
+							// Overwrite "Date Planned"
 							colPlanned = destinationTable.ListColumns.get_Item(colPlanedName);
 							colPlanned.DataBodyRange.Value = sourceTable.ListColumns.get_Item("Date Planned").DataBodyRange.Value;
-						} 
+						}
 					}
 					else
 					{
@@ -91,14 +92,19 @@ namespace LIBERO
 				if (destinationTable.DataBodyRange.FormatConditions.Count > 0)
 					destinationTable.DataBodyRange.FormatConditions.Delete();
 
+				var refDespatch = $"INDIRECT(\"{destinationTable.Name}[@[Despatched ex-works]]\")";
+				Func<string, string> toDateFunction = value => $"DATEVALUE(TEXTJOIN(\"/\", TRUE,MID({value}, 4, 2), LEFT({value}, 2), RIGHT({value}, 4)))";
+
+				var tmp = $"=NOT(ISERR({toDateFunction(refDespatch)}))";
+
 				FormatCondition despatchedCondition = destinationTable.DataBodyRange.FormatConditions.Add(
 					XlFormatConditionType.xlExpression,
-					Formula1: $"=NOT(ISERR(DATEVALUE(SUBSTITUTE(INDIRECT(\"{destinationTable.Name}[@[Despatched ex-works]]\"),\".\",\" / \"))))"
+					Formula1: $"=NOT(ISERR({toDateFunction(refDespatch)}))"
 					);
 				despatchedCondition.Interior.ColorIndex = 4; // Green
 				FormatCondition delayedCondition = destinationTable.DataBodyRange.FormatConditions.Add(
 					XlFormatConditionType.xlExpression,
-					Formula1: $"=DATEVALUE(SUBSTITUTE(OFFSET(INDIRECT(\"{destinationTable.Name}[@[Despatched ex-works]]\"), 0, -1),\".\",\" / \")) > DATEVALUE(SUBSTITUTE(OFFSET(INDIRECT(\"{destinationTable.Name}[@[Despatched ex-works]]\"), 0, -2),\".\",\" / \")) "
+					Formula1: $"={toDateFunction($"OFFSET({refDespatch}, 0, -1)")}> {toDateFunction($"OFFSET({refDespatch}, 0, -2)")}"
 					);
 				delayedCondition.Interior.ColorIndex = 6; // Yellow
 

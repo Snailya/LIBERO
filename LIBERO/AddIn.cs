@@ -9,7 +9,7 @@ using Microsoft.Office.Tools.Excel;
 
 namespace LIBERO
 {
-    public partial class ThisAddIn
+    public partial class AddIn
     {
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
