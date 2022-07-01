@@ -121,7 +121,7 @@ namespace LIBERO
 					destinationTable.DataBodyRange.FormatConditions.Delete();
 
 				var refDespatch = $"INDIRECT(\"{destinationTable.Name}[@[Despatched ex-works]]\")";
-				Func<string, string> toDateFunction = value => $"DATEVALUE(TEXTJOIN(\"/\", TRUE,MID({value}, 4, 2), LEFT({value}, 2), RIGHT({value}, 4)))";
+				Func<string, string> toDateFunction = value => $"DATEVALUE(TEXTJOIN(\"/\", TRUE, RIGHT({value}, 4), MID({value}, 4, 2), LEFT({value}, 2)))";
 
 				var tmp = $"=NOT(ISERR({toDateFunction(refDespatch)}))";
 
