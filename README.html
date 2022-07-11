@@ -1,0 +1,35 @@
+<h1 id="libero">LIBERO</h1>
+<p>LIBERO是一个用于导入西门子Delivery清单的EXCEL VSTO加载项。</p>
+<h2 id="功能">功能</h2>
+<ul>
+<li>导入更新Delivery清单中的Date Planned、Despatched ex-works、Disp.No
+项 <img src="https://s2.loli.net/2022/07/01/f5lZHbF764cJnEX.png"
+alt="WXWorkCapture_16565816661741" /></li>
+<li>高亮显示完成项（绿色）、延期项（黄色） <img
+src="https://s2.loli.net/2022/07/01/j7U1PM2f5HsWF43.png"
+alt="WXWorkCapture_16565815278182" /></li>
+</ul>
+<h2 id="先决条件">先决条件</h2>
+<ol type="1">
+<li>Delivery清单中应包含名为<code>Line#</code>、<code>Date Planned</code>、<code>Despatched ex-works</code>、<code>Disp.No</code>的Header；</li>
+<li>Delivery清单文件名中的日期应为<code>yyyyMMdd</code>的格式； <img
+src="https://s2.loli.net/2022/07/01/KRyFAaPzkJTNYcZ.png"
+alt="20220701145002" /></li>
+<li>Delivery清单中日期类型数据应为<code>dd.MM.yyyy</code>的格式； <img
+src="https://s2.loli.net/2022/07/01/omzwOCqZNa3gMbu.png"
+alt="20220701145107" /></li>
+<li>合并文件中应至少包含名为<code>Line#</code>、<code>Despatched ex-works</code>、<code>Disp.No</code>的Header</li>
+</ol>
+<h2 id="逻辑说明">逻辑说明</h2>
+<ol type="1">
+<li>检查条件4，若不满足程序终止；</li>
+<li>检查条件2，若不满足提示用户是否使用当前日期作为后缀；</li>
+<li>检查条件1，若不满足程序终止；</li>
+<li>当合并文件为空文件时，复制清单至合并文件；</li>
+<li>当合并文件非空时，若合并文件中存在相同日期后缀的的<code>Date Planned</code>列，则提示用户忽略或覆盖该列数据；若不存在，则插入清单中的数据，并为Header添加日期后缀；</li>
+<li>覆盖<code>Despatched ex-works</code>、<code>Disp.No</code>列数据；</li>
+<li>当<code>Despatched ex-works</code>列的值为日期时，认为Delivery完成，高亮为绿色；</li>
+<li>当<code>Date Planned[{Date}]</code>列（Offset [0,-1] related to
+<code>Despatched ex-works</code>）的日期值大于上一个<code>Date Planned[{Date}]</code>列(Offset
+[0,-2])的日期值时，认为Delivery延期，高亮为黄色。</li>
+</ol>
