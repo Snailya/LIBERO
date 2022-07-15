@@ -37,6 +37,8 @@
 			this.tabLibero = this.Factory.CreateRibbonTab();
 			this.grpSiemens = this.Factory.CreateRibbonGroup();
 			this.btnImport = this.Factory.CreateRibbonButton();
+			this.btnFormat = this.Factory.CreateRibbonButton();
+			this.btnPie = this.Factory.CreateRibbonButton();
 			this.tabLibero.SuspendLayout();
 			this.grpSiemens.SuspendLayout();
 			this.SuspendLayout();
@@ -51,6 +53,8 @@
 			// grpSiemens
 			// 
 			this.grpSiemens.Items.Add(this.btnImport);
+			this.grpSiemens.Items.Add(this.btnFormat);
+			this.grpSiemens.Items.Add(this.btnPie);
 			this.grpSiemens.Label = "西门子";
 			this.grpSiemens.Name = "grpSiemens";
 			// 
@@ -59,6 +63,18 @@
 			this.btnImport.Label = "导入清单";
 			this.btnImport.Name = "btnImport";
 			this.btnImport.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnImport_Click);
+			// 
+			// btnFormat
+			// 
+			this.btnFormat.Label = "格式化";
+			this.btnFormat.Name = "btnFormat";
+			this.btnFormat.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFormat_Click);
+			// 
+			// btnPie
+			// 
+			this.btnPie.Label = "统计图表";
+			this.btnPie.Name = "btnPie";
+			this.btnPie.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnPie_Click);
 			// 
 			// Ribbon
 			// 
@@ -79,6 +95,8 @@
 		internal Microsoft.Office.Tools.Ribbon.RibbonTab tabLibero;
 		internal Microsoft.Office.Tools.Ribbon.RibbonGroup grpSiemens;
 		internal Microsoft.Office.Tools.Ribbon.RibbonButton btnImport;
+		internal Microsoft.Office.Tools.Ribbon.RibbonButton btnFormat;
+		internal Microsoft.Office.Tools.Ribbon.RibbonButton btnPie;
 	}
 
 	partial class ThisRibbonCollection
